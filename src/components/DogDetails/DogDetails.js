@@ -15,8 +15,7 @@ const DogDetails = ({ match, history }) => {
     Birthdate: '',
     ColorName: '',
     RaceName: '',
-    IsDangerous: false,
-    selectedDate: new Date()
+    IsDangerous: false
   });
   // Save colors in that const
   const [colors, setColors] = useState([]);
@@ -60,7 +59,6 @@ const DogDetails = ({ match, history }) => {
           return race.ID === res.data.AnimalDetails.RaceID;
         });
         setDog({
-          ...dog,
           Name: res.data.AnimalDetails.Name,
           Birthdate: res.data.AnimalDetails.Birthdate.slice(0, 10),
           ColorID: res.data.AnimalDetails.ColorID,
@@ -68,7 +66,8 @@ const DogDetails = ({ match, history }) => {
           ColorName: myColor[0].Name,
           RaceName: myRace[0].Name,
           IsDangerous: res.data.AnimalDetails.IsDangerous,
-          ID: res.data.AnimalDetails.ID
+          ID: res.data.AnimalDetails.ID,
+          selectedDate: new Date()
         });
       } catch (error) {
         console.log(error);
@@ -211,12 +210,14 @@ const DogDetails = ({ match, history }) => {
             name='Birthdate'
             onChange={handleChange}
           />
-          <DatePicker
-            name='Birthdate'
-            selected={dog.selectedDate}
-            onChange={handleDate}
-            dateFormat='dd/MM/yyy'
-          />
+          {dog.selectedDate ? (
+            <DatePicker
+              name='Birthdate'
+              selected={dog.selectedDate}
+              onChange={handleDate}
+              dateFormat='dd/MM/yyy'
+            />
+          ) : null}
         </div>
         <div className='input-wrap'>
           Is Dangerous: Yes

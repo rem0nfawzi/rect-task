@@ -7,14 +7,14 @@ import DogsContextProvider from './contexts/DogsContext';
 
 function App() {
   return (
-    <DogsContextProvider>
-      <BrowserRouter>
-        <Switch>
+    <BrowserRouter>
+      <Switch>
+        <DogsContextProvider>
           <Route exact path='/' component={Home} />
           <Route exact path='/dog/:id' component={DogDetails} />
-        </Switch>
-      </BrowserRouter>
-    </DogsContextProvider>
+        </DogsContextProvider>
+      </Switch>
+    </BrowserRouter>
   );
 }
 
