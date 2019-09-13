@@ -215,7 +215,7 @@ const DogDetails = ({ match, history }) => {
             name='Birthdate'
             selected={dog.selectedDate}
             onChange={handleDate}
-            dateFormat='dd, MM , yyy'
+            dateFormat='dd/MM/yyy'
           />
         </div>
         <div className='input-wrap'>
