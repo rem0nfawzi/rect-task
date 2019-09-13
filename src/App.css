@@ -6,6 +6,11 @@
   padding: 150px;
 }
 
+/* css */
+html {
+  scroll-behavior: smooth;
+}
+
 #dogs .dog {
   display: flex;
   background-color: #f7f7f7;
