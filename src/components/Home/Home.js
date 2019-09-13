@@ -13,7 +13,7 @@ const Home = () => {
             'Content-Type': 'application/json'
           }
         };
-        const body = JSON.stringify({ Token: 'token_remon', Type: 'Dog' });
+        const body = { Token: 'token_remon', Type: 'Dog' };
         const res = await axios.post(
           'http://a.payclick.co.il/api/sample/GetAnimals',
           body,
