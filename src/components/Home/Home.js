@@ -1,11 +1,11 @@
-import React, { useContext, useEffect, useState, createRef } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { DogsContext } from '../../contexts/DogsContext';
 import axios from 'axios';
 import Dog from './Dog';
 
 const Home = () => {
-  const [myRefs, setRefs] = useState([]);
   const { dogs, setDogs } = useContext(DogsContext);
+  const [shownDogs, setShownDogs] = useState([]);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -21,53 +21,35 @@ const Home = () => {
           config
         );
         setDogs(res.data.Animals);
-        var myRefs = [];
-        for (let i = 0; i < res.data.Animals.length; i++) {
-          myRefs.push(createRef());
-        }
-        setRefs(myRefs);
+        setShownDogs(res.data.Animals);
       } catch (error) {
         console.log(error);
       }
     };
     fetchData();
-  }, [setDogs]);
-
-  // Function to scroll to any element
-  const scrollToRef = ref => window.scrollTo(0, ref.current.offsetTop);
+  }, [setDogs, setShownDogs]);
 
   // Handling search input
   const [search, setSearch] = useState('');
   const handleChange = e => {
     setSearch(e.target.value);
+    let d = dogs.filter(dog => {
+      return dog.Name.startsWith(e.target.value) ? true : false;
+    });
+    setShownDogs(d);
   };
 
-  // On submit search
-  const handleSubmit = e => {
-    e.preventDefault();
-    var x = 0;
-    if (dogs.length > 0) {
-      for (let i = 0; i < dogs.length; i++) {
-        if (dogs[i].Name.startsWith(search)) {
-          x = i;
-          break;
-        }
-      }
-      if (x !== 0) scrollToRef(myRefs[x]);
-    }
-  };
   return (
     <section id='dogs'>
       <h1>Dogs Info</h1>
       <div className='home-search'>
-        <form onSubmit={handleSubmit}>
+        <form>
           <input
             type='search'
             value={search}
             onChange={handleChange}
             placeholder='Search Dogs'
           />
-          <input type='submit' value='Search' />
         </form>
       </div>
       <div className='dog titles'>
@@ -78,8 +60,8 @@ const Home = () => {
         <p>BirthDate</p>
         <p>Is Dangerous</p>
       </div>
-      {dogs.map((dog, index) => {
-        return <Dog key={dog.ID} dog={dog} myref={myRefs[index]} />;
+      {shownDogs.map(dog => {
+        return <Dog key={dog.ID} dog={dog} />;
       })}
     </section>
   );

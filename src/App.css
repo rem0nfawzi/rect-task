@@ -59,6 +59,7 @@ html {
 #animal-form .input-wrap.auto-comp ul {
   position: absolute;
   left: 0;
+  z-index: 5;
   top: 100%;
   background-color: #f7f7f7;
   margin-top: 0;
@@ -70,11 +71,15 @@ html {
   overflow-y: scroll;
   z-index: 2;
   border: 1px solid #000;
-  display: none;
+  visibility: collapse;
+}
+
+#animal-form .input-wrap.rel {
+  position: relative;
 }
 
 #animal-form .input-wrap.auto-comp ul.show {
-  display: block;
+  visibility: visible;
 }
 
 #animal-form .input-wrap.auto-comp ul li {
@@ -86,6 +91,7 @@ html {
 .home-search {
   margin-bottom: 25px;
 }
+
 .home-search input {
   padding: 10px 20px;
 }
@@ -93,4 +99,15 @@ html {
 .err-msg {
   padding: 5px 10px;
   border: 2px solid #f00;
+}
+
+#auto-sug-wrap {
+  display: block;
+  background-color: #f00;
+}
+
+.sugg {
+  padding: 20px;
+  font-size: 30px;
+  background-clip: #f00;
 }

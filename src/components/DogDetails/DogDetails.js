@@ -4,6 +4,7 @@ import { withRouter } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import moment from 'moment';
+import Autocomplete from 'react-autocomplete';
 
 const DogDetails = ({ match, history }) => {
   // state for handling dog info
@@ -19,8 +20,9 @@ const DogDetails = ({ match, history }) => {
   });
 
   // State for colors and Races
-  const [colors, setColors] = useState([]);
-  const [races, setRaces] = useState([]);
+  const [colorsNames, setColorsNames] = useState([]);
+  const [racesNames, setRacesNames] = useState([]);
+
   useEffect(() => {
     // Fetching data
     const fetchData = async () => {
@@ -47,7 +49,11 @@ const DogDetails = ({ match, history }) => {
           tokenBody,
           config
         );
-        setColors(newColors.data.Colors);
+        setColorsNames(
+          newColors.data.Colors.map(c => {
+            return { label: c.Name, id: c.ID };
+          })
+        );
         const myColor = newColors.data.Colors.filter(color => {
           return color.ID === res.data.AnimalDetails.ColorID;
         });
@@ -56,7 +62,11 @@ const DogDetails = ({ match, history }) => {
           tokenBody,
           config
         );
-        setRaces(newRaces.data.Races);
+        setRacesNames(
+          newRaces.data.Races.map(c => {
+            return { label: c.Name, id: c.ID };
+          })
+        );
         const myRace = newRaces.data.Races.filter(race => {
           return race.ID === res.data.AnimalDetails.RaceID;
         });
@@ -99,73 +109,43 @@ const DogDetails = ({ match, history }) => {
     });
   };
 
-  // Showing and hiding auto complete lists
-  const [showColorsList, setColorsList] = useState(false);
-  const [showRacesList, setRacesList] = useState(false);
-
-  // Handling Colors
-  const chooseColor = (e, id) => {
-    setDog({
-      ...dog,
-      ColorName: e.target.textContent,
-      ColorID: id
-    });
-    setColorsList(false);
-  };
-
-  // Handling Races
-  const chooseRace = (e, id) => {
-    setDog({
-      ...dog,
-      RaceName: e.target.textContent,
-      RaceID: id
-    });
-    setRacesList(false);
-  };
-
   // Save details
-  const [isSaved, setIsSaved] = useState(false);
   const [errMsg, setErrMsg] = useState(null);
+  // Save details
   const handleSubmit = async e => {
     e.preventDefault();
+    let r = racesNames.filter(r => {
+      return r.label === dog.RaceName;
+    })[0].id;
+    let c = colorsNames.filter(r => {
+      return r.label === dog.ColorName;
+    })[0].id;
     let animal = {
       Token: 'token_remon',
       ID: dog.ID,
       Name: dog.Name,
-      RaceID: dog.RaceID,
-      ColorID: dog.ColorID,
+      RaceID: r,
+      ColorID: c,
       Birthdate: dog.Birthdate,
       IsDangerous: dog.IsDangerous
     };
+    console.log(animal);
     const config = {
       headers: {
         'Content-Type': 'application/json'
       }
     };
-
-    if (
-      dog.ID === '' ||
-      dog.Name === '' ||
-      dog.RaceName === '' ||
-      dog.ColorName === '' ||
-      dog.Birthdate === ''
-    ) {
-      setIsSaved(false);
-      setErrMsg('Please complete all fields');
+    const savedAnimal = await axios.post(
+      'http://a.payclick.co.il/api/sample/SaveAnimalDetails',
+      animal,
+      config
+    );
+    setErrMsg(savedAnimal.data.ErrorMessage);
+    console.log(savedAnimal.data.IsSuccess);
+    if (savedAnimal.data.IsSuccess) {
+      history.push('/');
     } else {
-      try {
-        const savedAnimal = await axios.post(
-          'http://a.payclick.co.il/api/sample/SaveAnimalDetails',
-          animal,
-          config
-        );
-        setIsSaved(savedAnimal.data.IsSuccess);
-        setErrMsg(savedAnimal.data.ErrorMessage);
-        history.push('/');
-      } catch (error) {
-        setIsSaved(false);
-        setErrMsg(error);
-      }
+      setErrMsg('Not Saved');
     }
   };
 
@@ -176,6 +156,14 @@ const DogDetails = ({ match, history }) => {
       selectedDate: date,
       Birthdate: moment(date).format('DD/MM/YYYY')
     });
+  };
+
+  const customStyle = {
+    zIndex: 5,
+    maxHeight: '100px',
+    bottom: 0,
+    border: '1px solid #eee',
+    overflowY: 'scroll'
   };
   return (
     <section id='dog-details'>
@@ -190,44 +178,57 @@ const DogDetails = ({ match, history }) => {
             onChange={handleChange}
           />
         </div>
-        <div className='input-wrap auto-comp'>
-          <input
-            type='text'
+        <div className='input-wrap'>
+          <Autocomplete
+            getItemValue={item => item.label}
+            items={colorsNames}
+            shouldItemRender={(item, value) =>
+              item.label.toLowerCase().indexOf(value.toLowerCase()) > -1
+            }
+            renderItem={(item, highlighted) => (
+              <div
+                key={item.id}
+                style={{
+                  backgroundColor: highlighted ? '#eee' : 'transparent'
+                }}
+              >
+                {item.label}
+              </div>
+            )}
             value={dog.ColorName}
-            placeholder='Color Name*'
-            name='ColorName'
-            onChange={handleChange}
-            onFocus={() => setColorsList(true)}
+            onChange={e => {
+              setDog({ ...dog, ColorName: e.target.value });
+            }}
+            onSelect={val => setDog({ ...dog, ColorName: val })}
+            menuStyle={customStyle}
           />
-          <ul className={`options ${showColorsList ? 'show' : ''}`}>
-            {colors.map(color => {
-              return color.Name.startsWith(dog.ColorName) ? (
-                <li key={color.ID} onClick={e => chooseColor(e, color.ID)}>
-                  {color.Name}
-                </li>
-              ) : null;
-            })}
-          </ul>
         </div>
-        <div className='input-wrap auto-comp'>
-          <input
-            type='text'
+
+        {/* Races */}
+        <div className='input-wrap'>
+          <Autocomplete
+            getItemValue={item => item.label}
+            items={racesNames}
+            shouldItemRender={(item, value) =>
+              item.label.toLowerCase().indexOf(value.toLowerCase()) > -1
+            }
+            renderItem={(item, highlighted) => (
+              <div
+                key={item.id}
+                style={{
+                  backgroundColor: highlighted ? '#eee' : 'transparent'
+                }}
+              >
+                {item.label}
+              </div>
+            )}
             value={dog.RaceName}
-            placeholder='Race Name*'
-            name='RaceName'
-            onChange={handleChange}
-            onFocus={() => setRacesList(true)}
+            onChange={e => setDog({ ...dog, RaceName: e.target.value })}
+            onSelect={val => setDog({ ...dog, RaceName: val })}
+            menuStyle={customStyle}
           />
-          <ul className={`options ${showRacesList ? 'show' : ''}`}>
-            {races.map(race => {
-              return race.Name.startsWith(dog.RaceName) ? (
-                <li key={race.ID} onClick={e => chooseRace(e, race.ID)}>
-                  {race.Name}
-                </li>
-              ) : null;
-            })}
-          </ul>
         </div>
+
         <div className='input-wrap'>
           {dog.selectedDate ? (
             <DatePicker
@@ -262,7 +263,7 @@ const DogDetails = ({ match, history }) => {
         </div>
       </form>
 
-      {!isSaved && errMsg && <p className='err-msg show'>{errMsg}</p>}
+      {errMsg !== null && <p className='err-msg show'>errMsg</p>}
     </section>
   );
 };

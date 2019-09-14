@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-const Dog = ({ dog, myref }) => {
+const Dog = ({ dog }) => {
   const [age, setAge] = useState(0);
   useEffect(() => {
     let d = parseInt(dog.Birthdate.slice(6, 10));
@@ -8,7 +8,7 @@ const Dog = ({ dog, myref }) => {
   }, [dog.Birthdate]);
   return (
     <Link to={`/dog/${dog.ID}`} className='dog list-item'>
-      <p ref={myref}>{dog.Name}</p>
+      <p>{dog.Name}</p>
       <p>{dog.Race}</p>
       <p>{dog.Color}</p>
       <p>{age}</p>
