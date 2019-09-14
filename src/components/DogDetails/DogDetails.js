@@ -17,10 +17,12 @@ const DogDetails = ({ match, history }) => {
     RaceName: '',
     IsDangerous: false
   });
-  // Save colors in that const
+
+  // State for colors and Races
   const [colors, setColors] = useState([]);
   const [races, setRaces] = useState([]);
   useEffect(() => {
+    // Fetching data
     const fetchData = async () => {
       try {
         const config = {
@@ -58,6 +60,12 @@ const DogDetails = ({ match, history }) => {
         const myRace = newRaces.data.Races.filter(race => {
           return race.ID === res.data.AnimalDetails.RaceID;
         });
+        let d =
+          res.data.AnimalDetails.Birthdate.slice(3, 5) +
+          ' ' +
+          res.data.AnimalDetails.Birthdate.slice(0, 2) +
+          ' ' +
+          res.data.AnimalDetails.Birthdate.slice(6, 10);
         setDog({
           Name: res.data.AnimalDetails.Name,
           Birthdate: res.data.AnimalDetails.Birthdate.slice(0, 10),
@@ -67,7 +75,7 @@ const DogDetails = ({ match, history }) => {
           RaceName: myRace[0].Name,
           IsDangerous: res.data.AnimalDetails.IsDangerous,
           ID: res.data.AnimalDetails.ID,
-          selectedDate: new Date()
+          selectedDate: new Date(d)
         });
       } catch (error) {
         console.log(error);
@@ -94,6 +102,7 @@ const DogDetails = ({ match, history }) => {
   // Showing and hiding auto complete lists
   const [showColorsList, setColorsList] = useState(false);
   const [showRacesList, setRacesList] = useState(false);
+
   // Handling Colors
   const chooseColor = (e, id) => {
     setDog({
@@ -133,14 +142,31 @@ const DogDetails = ({ match, history }) => {
         'Content-Type': 'application/json'
       }
     };
-    const savedAnimal = await axios.post(
-      'http://a.payclick.co.il/api/sample/SaveAnimalDetails',
-      animal,
-      config
-    );
-    setIsSaved(savedAnimal.data.IsSuccess);
-    setErrMsg(savedAnimal.data.ErrorMessage);
-    history.push('/');
+
+    if (
+      dog.ID === '' ||
+      dog.Name === '' ||
+      dog.RaceName === '' ||
+      dog.ColorName === '' ||
+      dog.Birthdate === ''
+    ) {
+      setIsSaved(false);
+      setErrMsg('Please complete all fields');
+    } else {
+      try {
+        const savedAnimal = await axios.post(
+          'http://a.payclick.co.il/api/sample/SaveAnimalDetails',
+          animal,
+          config
+        );
+        setIsSaved(savedAnimal.data.IsSuccess);
+        setErrMsg(savedAnimal.data.ErrorMessage);
+        history.push('/');
+      } catch (error) {
+        setIsSaved(false);
+        setErrMsg(error);
+      }
+    }
   };
 
   // Date
@@ -203,13 +229,6 @@ const DogDetails = ({ match, history }) => {
           </ul>
         </div>
         <div className='input-wrap'>
-          <input
-            type='text'
-            value={dog.Birthdate}
-            placeholder='BirthDate*'
-            name='Birthdate'
-            onChange={handleChange}
-          />
           {dog.selectedDate ? (
             <DatePicker
               name='Birthdate'
@@ -242,9 +261,8 @@ const DogDetails = ({ match, history }) => {
           <button>cancel</button>
         </div>
       </form>
-      <p className='msg'>
-        {isSaved && !errMsg ? 'Saved Successfully!' : errMsg}
-      </p>
+
+      {!isSaved && errMsg && <p className='err-msg show'>{errMsg}</p>}
     </section>
   );
 };

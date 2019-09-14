@@ -2,9 +2,8 @@ import React, { useContext, useEffect, useState, createRef } from 'react';
 import { DogsContext } from '../../contexts/DogsContext';
 import axios from 'axios';
 import Dog from './Dog';
-const Home = () => {
-  const scrollToRef = ref => window.scrollTo(0, ref.current.offsetTop); // General scroll to element function
 
+const Home = () => {
   const [myRefs, setRefs] = useState([]);
   const { dogs, setDogs } = useContext(DogsContext);
   useEffect(() => {
@@ -33,10 +32,17 @@ const Home = () => {
     };
     fetchData();
   }, [setDogs]);
+
+  // Function to scroll to any element
+  const scrollToRef = ref => window.scrollTo(0, ref.current.offsetTop);
+
+  // Handling search input
   const [search, setSearch] = useState('');
   const handleChange = e => {
     setSearch(e.target.value);
   };
+
+  // On submit search
   const handleSubmit = e => {
     e.preventDefault();
     var x = 0;
@@ -52,7 +58,8 @@ const Home = () => {
   };
   return (
     <section id='dogs'>
-      <div className='search'>
+      <h1>Dogs Info</h1>
+      <div className='home-search'>
         <form onSubmit={handleSubmit}>
           <input
             type='search'
@@ -60,12 +67,14 @@ const Home = () => {
             onChange={handleChange}
             placeholder='Search Dogs'
           />
+          <input type='submit' value='Search' />
         </form>
       </div>
       <div className='dog titles'>
         <p>Name</p>
         <p>Race</p>
         <p>Color</p>
+        <p>Age</p>
         <p>BirthDate</p>
         <p>Is Dangerous</p>
       </div>
